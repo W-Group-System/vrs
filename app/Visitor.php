@@ -13,4 +13,8 @@ class Visitor extends Model
     {
         return $this->belongsTo(Building::class);
     }
+    public function building()
+    {
+        return $this->belongsTo(Building::class, 'building_location', 'id');
+    }
 }

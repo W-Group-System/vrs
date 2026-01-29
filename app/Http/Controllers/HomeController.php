@@ -27,9 +27,17 @@ class HomeController extends Controller
      */
     public function index()
     {
+        ini_set('max_execution_time', 500);
         $visitors = Visitor::orderBy('id', 'desc')->get();
+        // $activeVisitors = Visitor::whereNull('return_id')
+        //     ->orderBy('id', 'desc')
+        //     ->paginate(10);
+
+        // $returnedVisitors = Visitor::where('return_id', 1)
+        //     ->orderBy('id', 'desc')
+        //     ->paginate(10); 
         $buildings = Building::all();
-        return view('dashboard.index', compact('visitors', 'buildings')); 
+        return view('dashboard.index', compact( 'visitors', 'buildings')); 
     }
 
     public function changePassword()
