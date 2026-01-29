@@ -125,11 +125,12 @@
                                                                     <img class="img-visitor" src="{{$visitor->image}}">&nbsp;&nbsp;{{$visitor->name}}
                                                                 </td>
                                                                 <td>
-                                                                    @foreach($buildings as $building)
+                                                                    {{-- @foreach($buildings as $building)
                                                                         @if($building->id == $visitor->building_location)
                                                                             {{ $building->name }}
                                                                         @endif
-                                                                    @endforeach
+                                                                    @endforeach --}}
+                                                                    <td>{{ $visitor->building->name ?? '-' }}</td>
                                                                 </td>
                                                                 <td>{{$visitor->tenant_name}}</td>
                                                                 <td>{{$visitor->purpose}}</td>
@@ -138,6 +139,7 @@
                                                             @endif
                                                         @endforeach
                                                     </tbody>
+                                                    {{-- {{ $activeVisitors->links() }} --}}
                                                 </table>
                                             </div>
                                         </div>
@@ -164,11 +166,12 @@
                                                                     <img class="img-visitor" src="{{$visitor->image}}">&nbsp;&nbsp;{{$visitor->name}}
                                                                 </td>
                                                                 <td>
-                                                                    @foreach($buildings as $building)
+                                                                    {{-- @foreach($buildings as $building)
                                                                         @if($building->id == $visitor->building_location)
                                                                             {{ $building->name }}
                                                                         @endif
-                                                                    @endforeach
+                                                                    @endforeach --}}
+                                                                    <td>{{ $visitor->building->name ?? '-' }}</td>
                                                                 </td>
                                                                 <td>{{$visitor->tenant_name}}</td>
                                                                 <td>{{$visitor->purpose}}</td>
@@ -178,6 +181,7 @@
                                                             @endif
                                                         @endforeach
                                                     </tbody>
+                                                    {{-- {{ $returnedVisitors->links() }} --}}
                                                 </table>
                                             </div>
                                         </div>
