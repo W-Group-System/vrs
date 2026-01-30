@@ -27,8 +27,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        ini_set('max_execution_time', 500);
-        $visitors = Visitor::orderBy('id', 'desc')->get();
+        // $visitors = Visitor::orderBy('id', 'desc')->get();
         // $activeVisitors = Visitor::whereNull('return_id')
         //     ->orderBy('id', 'desc')
         //     ->paginate(10);
@@ -36,8 +35,32 @@ class HomeController extends Controller
         // $returnedVisitors = Visitor::where('return_id', 1)
         //     ->orderBy('id', 'desc')
         //     ->paginate(10); 
-        $buildings = Building::all();
-        return view('dashboard.index', compact( 'visitors', 'buildings')); 
+        // $buildings = Building::all();
+
+        $location = auth()->user()->location;
+
+        $activeVisitors = Visitor::with('building')
+            ->when($location && auth()->user()->name !== 'Admin', function ($q) use ($location) {
+                $q->where('building_location', $location);
+            })
+            ->whereNull('return_id')
+            ->orderBy('id', 'desc')
+            ->paginate(10, ['*'], 'active_page');
+
+        $returnedVisitors = Visitor::with('building')
+            ->when($location && auth()->user()->name !== 'Admin', function ($q) use ($location) {
+                $q->where('building_location', $location);
+            })
+            ->where('return_id', 1)
+            ->orderBy('id', 'desc')
+            ->paginate(10, ['*'], 'returned_page');
+
+        return view('dashboard.index', compact( 'activeVisitors', 'returnedVisitors')); 
+    }
+
+    public function show(Visitor $visitor)
+    {
+        return view('dashboard.view', compact('visitor'));
     }
 
     public function changePassword()

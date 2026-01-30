@@ -107,9 +107,10 @@
                                     <div id="tab-1" class="tab-pane active">
                                         <div class="panel-body">
                                             <div class="table-responsive">
-                                                <table class="table table-striped table-bordered table-hover table-responsive">
+                                                <table class="table table-striped table-bordered table-hover table-responsive dataTables">
                                                     <thead>
                                                         <tr>
+                                                            <th>Image</th>
                                                             <th>Visitor</th>
                                                             <th>Building Name</th>
                                                             <th>Tenant Name</th>
@@ -118,28 +119,25 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach($visitors->where('return_id', null) as $visitor)
-                                                            @if(auth()->user()->location == $visitor->building_location || (auth()->user()->name == 'Admin'))
-                                                            <tr data-toggle="modal" title="View Information" data-target="#view_active{{ $visitor->id }}">
+                                                        {{-- @foreach($visitors->where('return_id', null) as $visitor) --}}
+                                                        @foreach($activeVisitors as $visitor)
+                                                            {{-- @if(auth()->user()->location == $visitor->building_location || (auth()->user()->name == 'Admin')) --}}
+                                                            <tr  title="View Information" class="view-visitor" data-id="{{ $visitor->id }}" style="cursor:pointer">
                                                                 <td>
-                                                                    <img class="img-visitor" src="{{$visitor->image}}">&nbsp;&nbsp;{{$visitor->name}}
+                                                                    <img class="img-visitor" loading="lazy" src="{{$visitor->image}}">
                                                                 </td>
+                                                                <td>{{$visitor->name}}</td>
                                                                 <td>
-                                                                    {{-- @foreach($buildings as $building)
-                                                                        @if($building->id == $visitor->building_location)
-                                                                            {{ $building->name }}
-                                                                        @endif
-                                                                    @endforeach --}}
-                                                                    <td>{{ $visitor->building->name ?? '-' }}</td>
+                                                                    {{ $visitor->building->name ?? '-' }}
                                                                 </td>
                                                                 <td>{{$visitor->tenant_name}}</td>
                                                                 <td>{{$visitor->purpose}}</td>
                                                                 <td>{{$visitor->created_at->format('m/d/Y h:i:s A')}}</td>
                                                             </tr>
-                                                            @endif
+                                                            {{-- @endif --}}
                                                         @endforeach
                                                     </tbody>
-                                                    {{-- {{ $activeVisitors->links() }} --}}
+                                                    {{ $activeVisitors->links() }}
                                                 </table>
                                             </div>
                                         </div>
@@ -147,9 +145,10 @@
                                     <div id="tab-2" class="tab-pane">
                                         <div class="panel-body">
                                             <div class="table-responsive">
-                                                <table class="table table-striped table-bordered table-hover table-responsive">
+                                                <table class="table table-striped table-bordered table-hover table-responsive dataTables">
                                                     <thead>
                                                         <tr>
+                                                            <th>Image</th>
                                                             <th>Visitor</th>
                                                             <th>Building Name</th>
                                                             <th>Tenant Name</th>
@@ -159,29 +158,26 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach($visitors->where('return_id', 1) as $visitor)
-                                                            @if(auth()->user()->location == $visitor->building_location || (auth()->user()->name == 'Admin'))
-                                                            <tr data-toggle="modal" title="View Information" data-target="#view_return{{ $visitor->id }}">
+                                                        {{-- @foreach($visitors->where('return_id', 1) as $visitor) --}}
+                                                        @foreach($returnedVisitors as $visitor)
+                                                            {{-- @if(auth()->user()->location == $visitor->building_location || (auth()->user()->name == 'Admin')) --}}
+                                                            <tr title="View Information" class="view-visitor" data-id="{{ $visitor->id }}">
                                                                 <td>
-                                                                    <img class="img-visitor" src="{{$visitor->image}}">&nbsp;&nbsp;{{$visitor->name}}
+                                                                    <img class="img-visitor" src="{{$visitor->image}}" loading="lazy">
                                                                 </td>
+                                                                <td>{{$visitor->name}}</td>
                                                                 <td>
-                                                                    {{-- @foreach($buildings as $building)
-                                                                        @if($building->id == $visitor->building_location)
-                                                                            {{ $building->name }}
-                                                                        @endif
-                                                                    @endforeach --}}
-                                                                    <td>{{ $visitor->building->name ?? '-' }}</td>
+                                                                    {{ $visitor->building->name ?? '-' }}
                                                                 </td>
                                                                 <td>{{$visitor->tenant_name}}</td>
                                                                 <td>{{$visitor->purpose}}</td>
                                                                 <td>{{$visitor->created_at->format('m/d/Y h:i:s A')}}</td>
                                                                 <td>{{$visitor->updated_at->format('m/d/Y h:i:s A')}}</td>
                                                             </tr>
-                                                            @endif
+                                                            {{-- @endif --}}
                                                         @endforeach
                                                     </tbody>
-                                                    {{-- {{ $returnedVisitors->links() }} --}}
+                                                    {{ $returnedVisitors->links() }}
                                                 </table>
                                             </div>
                                         </div>
@@ -195,13 +191,31 @@
         </div>
     </div>
 </div>
-@foreach($visitors as $visitor)
-    @include('dashboard.view')
-@endforeach
+
+<div class="modal fade" id="visitorModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="visitorModalContent">
+        </div>
+    </div>
+</div>
+
+
 <style>
     .stat-percent {
         font-size: 20px;
     }
 </style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+$(document).on('click', '.view-visitor', function () {
+    let id = $(this).data('id');
 
+    $('#visitorModalContent').html('<div class="p-4 text-center">Loading...</div>');
+
+    $('#visitorModalContent').load('visitor/' + id, function () {
+        $('#visitorModal').modal('show');
+    });
+});
+</script>
 @endsection

@@ -19,7 +19,15 @@ class ReportController extends Controller
             $visitorTotal = Visitor::where('building_location', $location)->count();
         }
 
-        $visitors = Visitor::all();
+        $visitors = Visitor::select(
+            'visitor_id',
+            'image',
+            'name',
+            'tenant_name',
+            'purpose',
+            'created_at',
+            'updated_at'
+        )->get();
         
         return view('reports.index', compact('visitors', 'visitorTotal'));
     }

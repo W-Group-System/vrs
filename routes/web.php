@@ -23,6 +23,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/dashboard', 'HomeController@index');
     Route::get('view_active/{id}', 'HomeController@view_active');
     Route::get('view_return/{id}', 'HomeController@view_return');
+    Route::get('visitor/{visitor}', 'HomeController@show')->name('visitor.show');
+
     
     // change password
     Route::get('change_password','HomeController@changePassword')->name('change_password');
