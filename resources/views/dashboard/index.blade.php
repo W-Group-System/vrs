@@ -85,6 +85,90 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5 class="text-warning">Employee</h5>
+                </div>
+                <div class="ibox-content">
+                    @php
+                        if (auth()->user()->location === null) {
+                            $jobTotal = \App\Visitor::where('purpose', 'Employee')->count();
+                        } else {
+                            $jobTotal = \App\Visitor::where('purpose', 'Employee')
+                                    ->where('building_location', auth()->user()->location)
+                                    ->count();
+                        }
+                    @endphp
+                    <h1 class="no-margins">{{ $jobTotal }}</h1>
+                    <div class="stat-percent font-bold text-warning"><i class="fa fa-search"></i></div>
+                    <small>Total Visit</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5 class="text-warning">For Interview</h5>
+                </div>
+                <div class="ibox-content">
+                    @php
+                        if (auth()->user()->location === null) {
+                            $jobTotal = \App\Visitor::where('purpose', 'For Interview')->count();
+                        } else {
+                            $jobTotal = \App\Visitor::where('purpose', 'For Interview')
+                                    ->where('building_location', auth()->user()->location)
+                                    ->count();
+                        }
+                    @endphp
+                    <h1 class="no-margins">{{ $jobTotal }}</h1>
+                    <div class="stat-percent font-bold text-warning"><i class="fa fa-search"></i></div>
+                    <small>Total Visit</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5 class="text-warning">Interns/Trainees</h5>
+                </div>
+                <div class="ibox-content">
+                    @php
+                        if (auth()->user()->location === null) {
+                            $jobTotal = \App\Visitor::where('purpose', 'Interns/Trainees')->count();
+                        } else {
+                            $jobTotal = \App\Visitor::where('purpose', 'Interns/Trainees')
+                                    ->where('building_location', auth()->user()->location)
+                                    ->count();
+                        }
+                    @endphp
+                    <h1 class="no-margins">{{ $jobTotal }}</h1>
+                    <div class="stat-percent font-bold text-warning"><i class="fa fa-search"></i></div>
+                    <small>Total Visit</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5 class="text-warning">Client</h5>
+                </div>
+                <div class="ibox-content">
+                    @php
+                        if (auth()->user()->location === null) {
+                            $jobTotal = \App\Visitor::where('purpose', 'Client')->count();
+                        } else {
+                            $jobTotal = \App\Visitor::where('purpose', 'Client')
+                                    ->where('building_location', auth()->user()->location)
+                                    ->count();
+                        }
+                    @endphp
+                    <h1 class="no-margins">{{ $jobTotal }}</h1>
+                    <div class="stat-percent font-bold text-warning"><i class="fa fa-search"></i></div>
+                    <small>Total Visit</small>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endif

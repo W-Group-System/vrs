@@ -110,7 +110,11 @@
                                         <select name="purpose" id="purpose" class="form-control form-input" title="Select Purpose">
                                             <option value="Business Visits">Business Visits</option>
                                             <option value="Personal Visits">Personal Visits</option>
-                                            <option value="Job Visits">Job Visits</option>
+                                            {{-- <option value="Job Visits">Job Visits</option> --}}
+                                            <option value="Employee">Employee</option>
+                                            <option value="For Interview">For Interview</option>
+                                            <option value="Interns/Trainees">Interns/Trainees</option>
+                                            <option value="Client">Client</option>
                                         </select>
                                     </div>
                                 </div>
