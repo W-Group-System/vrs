@@ -13,10 +13,10 @@ class VisitorController extends Controller
     public function index($id) 
     {
         $building = Building::findOrfail($id);
-        $visitors = Visitor::all();
+        // $visitors = Visitor::all();
         // $tenants = Tenant::pluck('name')->toArray();
         $tenants = Tenant::where('building_id', $building->id)->pluck('name')->toArray();
-        return view('visitors.index', compact('visitors', 'tenants', 'building')); 
+        return view('visitors.index', compact('tenants', 'building')); 
     }
 
     // Store
