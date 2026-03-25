@@ -11,6 +11,19 @@
                     <div class="wrapper wrapper-content animated fadeIn">
                         <div class="row">
                             <div class="table-responsive">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <form method="GET" action="{{ url('/visitor_id') }}">
+                                        <div>
+                                            <input type="text" id="search" name="search" value="{{ request('search') }}" placeholder="Search..." style="padding:5px; border:1px solid #ccc; border-radius:4px;">
+                                            <button type="submit" class="btn btn-default btn-sm">Search</button>
+                                        </div>
+                                    </form>
+                                    <div>
+                                        <a id="btnCsv" href="{{ url('/visitors/export/csv') }}" class="btn btn-default btn-sm">CSV</a>
+                                        <a id="btnExcel" href="{{ url('/visitors/export/excel') }}" class="btn btn-default btn-sm">Excel</a>
+                                        <a id="btnPdf" href="{{ url('/visitors/export/pdf') }}" class="btn btn-default btn-sm">PDF</a>
+                                    </div>
+                                </div>
                                 <table class="table table-striped table-bordered table-hover table-responsive dataTables-visitor">
                                     <thead>
                                         <tr>
@@ -52,6 +65,7 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                {{ $visitors->links() }}
                             </div>
                         </div>
                     </div>
@@ -99,6 +113,7 @@
 
 <script>
     $(document).ready(function(){
+    /*
         $('.dataTables-visitor').DataTable({
             pageLength: 25,
             responsive: false,
@@ -109,6 +124,7 @@
                 {extend: 'pdf', title: 'Visitor List'},
             ]
         });
+        */
     });
 
     $(document).ready(function() {

@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 use App\Visitor;
 use App\Tenant;
 use App\Building;
+use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Exports\VisitorExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class VisitorController extends Controller
 {
@@ -35,11 +38,27 @@ class VisitorController extends Controller
     }
 
     // Visitor ID List
-    public function visitor_id() 
+    public function visitor_id(Request $request) 
     {
-        $visitors = Visitor::where('return_id', null)->orderBy('id', 'desc')->get();
+        $search = $request->input('search');
+
+        $visitors = Visitor::query()
+            ->whereNull('return_id');
+
+        if (!empty($search)) {
+            $visitors->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                ->orWhere('tenant_name', 'LIKE', "%{$search}%")
+                ->orWhere('purpose', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $visitors = $visitors
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->appends($request->all());
         $buildings = Building::all();
-        return view('visitors.visitor_id', compact('visitors', 'buildings')); 
+        return view('visitors.visitor_id', compact('visitors', 'buildings'));
     }
 
     // Add Visitor ID
@@ -60,5 +79,55 @@ class VisitorController extends Controller
         }
         Alert::success('Success Title', 'Success Message');
         return back();
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $filename = "visitors.csv";
+
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename={$filename}",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $query = Visitor::query()->whereNull('return_id');
+        $visitors = $query->orderBy('id', 'desc')->get();
+
+        $columns = ['Visitor ID', 'Name', 'Tenant Name', 'Purpose', 'Date Entered'];
+
+        $callback = function() use ($visitors, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+            foreach ($visitors as $visitor) {
+                fputcsv($file, [
+                    $visitor->visitor_id,
+                    $visitor->name,
+                    $visitor->tenant_name,
+                    $visitor->purpose,
+                    optional($visitor->created_at)->format('m/d/Y h:i:s A')
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $visitors = Visitor::whereNull('return_id')->orderBy('id', 'desc')->get();
+        $pdf = PDF::loadView('pdf.visitors', compact('visitors'));
+
+        return $pdf->download('visitor_list.pdf'); // download
+        // return $pdf->stream('visitor_list.pdf'); // preview in browser
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new VisitorExport, 'visitor_list.xlsx');
     }
 }
