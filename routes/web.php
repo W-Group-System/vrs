@@ -57,4 +57,7 @@ Route::group(['middleware' => 'auth'], function () {
     // reports
     Route::get('/report', 'ReportController@index');
     Route::get('/filter', 'ReportController@filter')->name('visitors.filter');
+    Route::get('/visitors/export/csv', 'VisitorController@exportCsv');
+    Route::get('/visitors/export/pdf', 'VisitorController@exportPdf');
+    Route::get('/visitors/export/excel', 'VisitorController@exportExcel');
 });
