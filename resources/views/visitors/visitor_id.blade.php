@@ -38,7 +38,7 @@
                                     </thead>
                                     <tbody>
                                         @foreach($visitors as $visitor)
-                                            @if(auth()->user()->location == $visitor->building_location || (auth()->user()->name == 'Admin'))
+                                            {{-- @if(auth()->user()->location == $visitor->building_location || (auth()->user()->name == 'Admin')) --}}
                                             <tr>
                                                 @if ($visitor->visitor_id === null)
                                                     <td class="visitor-view" data-visitor-id="{{ $visitor->id }}" style="background-color: #f14d4d" width="10%">{{$visitor->visitor_id}}</td>
@@ -61,7 +61,7 @@
                                                     @endif
                                                 </td>
                                             </tr>
-                                            @endif
+                                            {{-- @endif --}}
                                         @endforeach
                                     </tbody>
                                 </table>

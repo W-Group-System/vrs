@@ -44,12 +44,17 @@ class VisitorController extends Controller
 
         $visitors = Visitor::query()
             ->whereNull('return_id');
+        
+        if (auth()->user()->name !== 'Admin') {
+            $visitors = $visitors->where("building_location",auth()->user()->location);
+        }
 
         if (!empty($search)) {
             $visitors->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                 ->orWhere('tenant_name', 'LIKE', "%{$search}%")
-                ->orWhere('purpose', 'LIKE', "%{$search}%");
+                ->orWhere('purpose', 'LIKE', "%{$search}%")
+                ->orWhere('visitor_id', 'LIKE', "%{$search}%");
             });
         }
 
