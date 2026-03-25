@@ -60,4 +60,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/visitors/export/csv', 'VisitorController@exportCsv');
     Route::get('/visitors/export/pdf', 'VisitorController@exportPdf');
     Route::get('/visitors/export/excel', 'VisitorController@exportExcel');
+
+    Route::get('/visitors/{type}/{id}', 'VisitorController@ShowImage');
 });

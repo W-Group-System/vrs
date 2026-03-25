@@ -42,8 +42,17 @@ class VisitorController extends Controller
     {
         $search = $request->input('search');
 
-        $visitors = Visitor::query()
-            ->whereNull('return_id');
+        $visitors = Visitor::select(
+            "id",
+            "name",
+            "tenant_name",
+            "visitor_id",
+            "return_id",
+            "purpose",
+            "building_location",
+            "created_at"
+        )
+        ->whereNull('return_id');
         
         if (auth()->user()->name !== 'Admin') {
             $visitors = $visitors->where("building_location",auth()->user()->location);
@@ -134,5 +143,34 @@ class VisitorController extends Controller
     public function exportExcel()
     {
         return Excel::download(new VisitorExport, 'visitor_list.xlsx');
+    }
+
+    public function ShowImage($type,$id)
+    {
+        
+        $record = Visitor::findOrFail($id);
+        $base64 = "";
+        
+        switch ($type) {
+            case 'scan_id':
+                $base64 = $record->scan_id;
+                break;
+            case 'image':
+                $base64 = $record->image;
+                break;
+            default:
+                $base64 = "";
+                break;
+        }
+
+        preg_match('/^data:image\/(\w+);base64,/', $base64, $type);
+
+        $base64 = substr($base64, strpos($base64, ',') + 1);
+        $base64 = base64_decode($base64);
+
+        $imageType = $type[1] ?? 'jpeg';
+
+        return response($base64)
+            ->header('Content-Type', 'image/' . $imageType);
     }
 }
