@@ -53,7 +53,8 @@ class VisitorController extends Controller
             $visitors->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                 ->orWhere('tenant_name', 'LIKE', "%{$search}%")
-                ->orWhere('purpose', 'LIKE', "%{$search}%");
+                ->orWhere('purpose', 'LIKE', "%{$search}%")
+                ->orWhere('visitor_id', 'LIKE', "%{$search}%");
             });
         }
 
