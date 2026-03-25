@@ -8,6 +8,7 @@ use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Exports\VisitorExport;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
 class VisitorController extends Controller
@@ -140,9 +141,11 @@ class VisitorController extends Controller
         // return $pdf->stream('visitor_list.pdf'); // preview in browser
     }
 
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        return Excel::download(new VisitorExport, 'visitor_list.xlsx');
+        $start_date = Carbon::parse($request->start_date)->startOfDay();
+        $end_date = Carbon::parse($request->end_date)->endOfDay();
+        return Excel::download(new VisitorExport($start_date,$end_date,"visitorId"), 'visitor_list.xlsx');
     }
 
     public function ShowImage($type,$id)

@@ -61,4 +61,7 @@ Route::group(['middleware' => 'auth'], function () {
     // reports
     Route::get('/report', 'ReportController@index');
     Route::get('/filter', 'ReportController@filter')->name('visitors.filter');
+    Route::post('/report/export/csv', 'ReportController@exportCsv')->name('report.csv');
+    Route::post('/report/export/pdf', 'ReportController@exportPdf')->name('report.pdf');
+    Route::post('/report/export/excel', 'ReportController@exportExcel')->name('report.excel');
 });

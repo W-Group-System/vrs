@@ -26,18 +26,18 @@
                                 <div class="row mb-10">
                                     <div class="col-md-3">
                                         <label>Start Date:</label>
-                                        <input type="date" class="form-control" name="start_date"
+                                        <input type="date" class="form-control" name="start_date" id="form_start_date"
                                             value="{{ request('start_date') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label>End Date:</label>
-                                        <input type="date" class="form-control" name="end_date"
+                                        <input type="date" class="form-control" name="end_date" id="form_end_date"
                                             value="{{ request('end_date') }}">
                                     </div>
 
                                     <div class="col-md-4">
                                         <label>Search</label>
-                                        <input type="text" class="form-control" name="search"
+                                        <input type="text" class="form-control" name="search" id="search"
                                             value="{{ request('search') }}">
                                     </div>
                                     <div class="col-md-2" style="margin-top: 25px;">
@@ -50,9 +50,9 @@
                             <div class="table-responsive">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <div>
-                                        <a id="btnCsv" href="{{ url('/visitors/export/csv') }}" class="btn btn-default btn-sm">CSV</a>
-                                        <a id="btnExcel" href="{{ url('/visitors/export/excel') }}" class="btn btn-default btn-sm">Excel</a>
-                                        <a id="btnPdf" href="{{ url('/visitors/export/pdf') }}" class="btn btn-default btn-sm">PDF</a>
+                                        <button id="btnCsv" class="btn btn-default btn-sm">CSV</button>
+                                        <button id="btnExcel" class="btn btn-default btn-sm">Excel</button>
+                                        <button id="btnPdf" class="btn btn-default btn-sm">PDF</button>
                                     </div>
                                 </div>
                                 <table class="table table-striped table-bordered table-hover table-responsive">
@@ -92,6 +92,11 @@
         </div>
     </div>
 </div>
+<form id="printReportForm" method="POST">
+    @csrf
+    <input type="hidden" value="{{ request('start_date') }}" name="start_date" id="print_start_date">
+    <input type="hidden" value="{{ request('end_date') }}" name="end_date" id="print_end_date">
+</form>
 
 <style>
     .ibox-report {
@@ -103,4 +108,35 @@
         margin-top: 15px;
     }
 </style>
+@endsection
+@section('footer')
+<script>
+    $(document).ready(function () {
+
+        $('#form_start_date').on('change', function () {
+            let startDate = $(this).val();
+            $('#print_start_date').val(startDate);
+        });
+        $('#form_end_date').on('change', function () {
+            let endtDate = $(this).val();
+            $('#print_end_date').val(endtDate);
+        });
+
+        $('#btnCsv').on('click', function () {
+            let form = $('#printReportForm');
+            form.attr("action","{{ route('report.csv') }}");
+            form.trigger('submit');
+        });
+        $('#btnExcel').on('click', function () {
+            let form = $('#printReportForm');
+            form.attr("action","{{ route('report.excel') }}");
+            form.trigger('submit');
+        });
+        $('#btnPdf').on('click', function () {
+            let form = $('#printReportForm');
+            form.attr("action","{{ route('report.pdf') }}");
+            form.trigger('submit');
+        });
+    });
+</script>
 @endsection
