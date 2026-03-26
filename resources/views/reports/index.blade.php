@@ -72,7 +72,7 @@
                                             @if(auth()->user()->location == $visitor->building_location || auth()->user()->name == 'Admin')
                                             <tr>
                                                 <td>{{ $visitor->visitor_id ? $visitor->visitor_id : 'N/A' }}</td>
-                                                <td><img class="img-visitor" src="{{ url('/visitors/image/'. $visitor->id) }}"></td>
+                                                <td><img class="img-visitor" src="{{ $visitor->image }}"></td>
                                                 <td>{{ $visitor->name }}</td>
                                                 <td>{{ $visitor->tenant_name }}</td>
                                                 <td>{{ $visitor->purpose }}</td>

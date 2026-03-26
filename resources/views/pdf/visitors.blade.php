@@ -66,11 +66,11 @@
     <tbody>
         @foreach($visitors as $visitor)
         <tr>
-            <td>{{ $visitor->visitor_id }}</td>
-            <td>{{ $visitor->name }}</td>
-            <td>{{ $visitor->tenant_name }}</td>
-            <td>{{ $visitor->purpose }}</td>
-            <td>{{ optional($visitor->created_at)->format('m/d/Y h:i A') }}</td>
+            <td>{{ $visitor['visitor_id'] }}</td>
+            <td>{{ $visitor['name'] }}</td>
+            <td>{{ $visitor['tenant_name'] }}</td>
+            <td>{{ $visitor['purpose'] }}</td>
+            <td>{{ optional($visitor['created_at'])->format('m/d/Y h:i A') }}</td>
         </tr>
         @endforeach
     </tbody>

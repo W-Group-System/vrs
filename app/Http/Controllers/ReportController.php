@@ -32,7 +32,9 @@ class ReportController extends Controller
             'tenant_name',
             'purpose',
             'created_at',
-            'updated_at'
+            'updated_at',
+            'image',
+            'scan_id'
         );
 
         if (!empty($start_date) && !empty($end_date)) {
@@ -143,18 +145,35 @@ class ReportController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $start_date = isset($request->start_date) && !empty($request->start_date) ? Carbon::parse($request->start_date)->startOfDay():"";
-        $end_date = isset($request->end_date) && !empty($request->end_date) ? Carbon::parse($request->end_date)->endOfDay():"";
-        
-        $visitors = Visitor::query();
-        if (!empty($start_date) && !empty($end_date)) {
-            $visitors = $visitors->whereBetween("created_at",[$start_date,$end_date]);
-        }
-        $visitors = $visitors->orderBy('id', 'desc')->get();
-        $pdf = PDF::loadView('pdf.visitors', compact('visitors'));
+        $start_date = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : null;
+        $end_date   = $request->filled('end_date')   ? Carbon::parse($request->end_date)->endOfDay()   : null;
 
-        return $pdf->download('visitor_list.pdf'); // download
-        // return $pdf->stream('visitor_list.pdf'); // preview in browser
+        $visitorsQuery = Visitor::query();
+
+        if ($start_date && $end_date) {
+            $visitorsQuery->whereBetween('created_at', [$start_date, $end_date]);
+        }
+
+        $visitorsQuery->orderBy('id', 'desc');
+
+        // Collect in chunks to avoid memory issues
+        $allVisitors = [];
+        $visitorsQuery->chunk(1000, function ($rows) use (&$allVisitors) {
+            foreach ($rows as $visitor) {
+                $allVisitors[] = [
+                    'visitor_id'  => $visitor->visitor_id??"",
+                    'name'        => $visitor->name??"",
+                    'tenant_name' => $visitor->tenant_name??"",
+                    'purpose'     => $visitor->purpose??"",
+                    'created_at'  => $visitor->created_at
+                ];
+            }
+        });
+
+        // Pass all collected data to PDF
+        $pdf = PDF::loadView('pdf.visitors', ['visitors' => $allVisitors]);
+
+        return $pdf->download('visitor_list.pdf');
     }
 
     public function exportExcel(Request $request)
