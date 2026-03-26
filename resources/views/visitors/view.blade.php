@@ -36,11 +36,11 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-6" align="center">
-                        <img class="resize" src="{{$visitor->scan_id}}">
+                        <img class="resize" src="{{ url('/visitors/scan_id/'.$visitor->id) }}">
                         <h3 class="mt-20">Scanned ID</h3>
                     </div>
                     <div class="col-lg-6" align="center">
-                        <img class="resize" src="{{$visitor->image}}">
+                        <img class="resize" src="{{ url('/visitors/image/'.$visitor->id) }}">
                         <h3 class="mt-20">Image</h3>
                     </div>
                 </div>

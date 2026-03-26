@@ -45,7 +45,7 @@
                                                 @else
                                                     <td class="visitor-view" data-visitor-id="{{ $visitor->id }}" width="10%">{{$visitor->visitor_id}}</td>
                                                 @endif
-                                                <td class="visitor-view" data-visitor-id="{{ $visitor->id }}" width="8%"><img class="img-visitor" src="{{$visitor->image}}"></td>
+                                                <td class="visitor-view" data-visitor-id="{{ $visitor->id }}" width="8%"><img class="img-visitor" src="{{ url('/visitors/image/'. $visitor->id) }}"></td>
                                                 <td class="visitor-view" data-visitor-id="{{ $visitor->id }}" width="22%">{{$visitor->name}}</td>
                                                 <td class="visitor-view" data-visitor-id="{{ $visitor->id }}" width="17%">{{$visitor->created_at->format('m/d/Y h:i:s A')}}</td>
                                                 <td class="visitor-view" data-visitor-id="{{ $visitor->id }}" width="20%">{{$visitor->tenant_name}}</td>

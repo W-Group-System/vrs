@@ -8,6 +8,7 @@ use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Exports\VisitorExport;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
 class VisitorController extends Controller
@@ -42,8 +43,17 @@ class VisitorController extends Controller
     {
         $search = $request->input('search');
 
-        $visitors = Visitor::query()
-            ->whereNull('return_id');
+        $visitors = Visitor::select(
+            "id",
+            "name",
+            "tenant_name",
+            "visitor_id",
+            "return_id",
+            "purpose",
+            "building_location",
+            "created_at"
+        )
+        ->whereNull('return_id');
         
         if (auth()->user()->name !== 'Admin') {
             $visitors = $visitors->where("building_location",auth()->user()->location);
@@ -131,8 +141,39 @@ class VisitorController extends Controller
         // return $pdf->stream('visitor_list.pdf'); // preview in browser
     }
 
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        return Excel::download(new VisitorExport, 'visitor_list.xlsx');
+        $start_date = Carbon::parse($request->start_date)->startOfDay();
+        $end_date = Carbon::parse($request->end_date)->endOfDay();
+        return Excel::download(new VisitorExport($start_date,$end_date,"visitorId"), 'visitor_list.xlsx');
+    }
+
+    public function ShowImage($type,$id)
+    {
+        
+        $record = Visitor::findOrFail($id);
+        $base64 = "";
+        
+        switch ($type) {
+            case 'scan_id':
+                $base64 = $record->scan_id;
+                break;
+            case 'image':
+                $base64 = $record->image;
+                break;
+            default:
+                $base64 = "";
+                break;
+        }
+
+        preg_match('/^data:image\/(\w+);base64,/', $base64, $type);
+
+        $base64 = substr($base64, strpos($base64, ',') + 1);
+        $base64 = base64_decode($base64);
+
+        $imageType = $type[1] ?? 'jpeg';
+
+        return response($base64)
+            ->header('Content-Type', 'image/' . $imageType);
     }
 }
