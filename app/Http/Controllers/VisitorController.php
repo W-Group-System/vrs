@@ -45,6 +45,8 @@ class VisitorController extends Controller
 
         $visitors = Visitor::select(
             "id",
+            "image",
+            "scan_id",
             "name",
             "tenant_name",
             "visitor_id",
