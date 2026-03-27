@@ -59,7 +59,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/visitors/export/excel', 'VisitorController@exportExcel');
     Route::get('/visitors/{type}/{id}', 'VisitorController@ShowImage');
     Route::get('/visitors/list', 'VisitorController@VisitorList')->name('visitors.list');
-
+    Route::post('create/id', 'VisitorController@CreateId')->name('visitor.create.id');
     // reports
     Route::get('/report', 'ReportController@index');
     Route::get('/filter', 'ReportController@filter')->name('visitors.filter');

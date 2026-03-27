@@ -107,13 +107,11 @@ class VisitorController extends Controller
                 "purpose",
                 "building_location",
                 "created_at"
-                ,
-                "image"
-                // ,"scan_id",
             )
             ->whereNull('return_id');
 
             if (isset($request->id) && !empty($request->id)) {
+                $visitorList->addSelect("image","scan_id");
                 $visitorList = $visitorList->where("id",$request->id);
             }
 
@@ -212,6 +210,34 @@ class VisitorController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function CreateId(Request $request) {
+        $response = [
+            "message"=>"Failed to create new id"
+        ];
+        $isSuccess = false;
+        try {
+            $id = $request->id??"";
+            $createdId = $request->visitor_id??"";
+            if (!empty($id) && !empty($createdId)) {
+                $updateVisitorData = Visitor::where('id', $id)->update(['visitor_id' => $createdId]);
+                $response = ["message"=>"New id created."];
+                $isSuccess = true;
+            }else{
+                $response = ["message"=>"Invalid id"];
+            }
+            
+        } catch (\Throwable $th) {
+            Log::error("ERROR IN CREATING NEW ID: {$th->getMessage()}");
+            dd($th->getMessage());
+        }
+        
+        if ($isSuccess) {
+            return response()->json($response,200);
+        }else{
+            return response()->json($response,400);
+        }
     }
 
     public function exportPdf(Request $request)
