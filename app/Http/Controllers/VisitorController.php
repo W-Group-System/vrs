@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Exports\VisitorExport;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class VisitorController extends Controller
@@ -76,6 +77,84 @@ class VisitorController extends Controller
             ->appends($request->all());
         $buildings = Building::all();
         return view('visitors.visitor_id', compact('visitors', 'buildings'));
+    }
+
+    public function VisitorIdV2(Request $request) 
+    {
+        
+        return view('visitors.visitorIdV2');
+    }
+
+    public function VisitorList(Request $request){
+        $response = [
+            "isSuccess"=>false,
+            "message"=>"Failed to retrieve information.",
+            "total"=>0,
+            "page"=>1,
+            "data"=>null
+        ];
+        $isSuccess = false;
+        try {
+            $page = $request->page ?? 1;
+            $limit = $request->limit ?? 10;
+
+            $visitorList = Visitor::select(
+                "id",
+                "name",
+                "tenant_name",
+                "visitor_id",
+                "return_id",
+                "purpose",
+                "building_location",
+                "created_at"
+                ,
+                "image",
+                "scan_id",
+            );
+
+            if (isset($request->id) && !empty($request->id)) {
+                $visitorList = $visitorList->where("id",$request->id);
+            }
+
+            if (isset($request->search) && !empty(isset($request->search))) {
+                $search = $request->search;
+                $visitorList = $visitorList->where(function ($query) use ($search) {
+                    $query->where('name', 'LIKE', "%{$search}%")
+                        ->orWhere('tenant_name', 'LIKE', "%{$search}%")
+                        ->orWhere('purpose', 'LIKE', "%{$search}%")
+                        ->orWhere('visitor_id', 'LIKE', "%{$search}%");
+                });
+            }
+
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $start = Carbon::parse($request->start_date)->startOfDay();
+                $end   = Carbon::parse($request->end_date)->endOfDay();
+
+                $visitorList->whereBetween('created_at', [$start, $end]);
+            }
+
+            $totalCount = (clone $visitorList)->count();
+
+            $visitorList = $visitorList->orderBy("id","desc") 
+                ->skip(($page - 1) * $limit)
+                ->take($limit)
+                ->get();
+            $isSuccess = true;
+            $response["isSuccess"] = $isSuccess;
+            $response["message"] = "Successfully retrieved information.";
+            $response["total"] = $totalCount;
+            $response["data"] = $visitorList;
+        } catch (\Throwable $th) {
+            Log::error("ERROR IN GETTING VISITORS LIST: ".$th);
+        }
+
+        if ($isSuccess) {
+            return response()->json($response,200);
+        }else{
+            return response()->json($response,400);
+        }
+        
+        return $response;
     }
 
     // Add Visitor ID
