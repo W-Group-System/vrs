@@ -1,5 +1,10 @@
 @extends('layouts.header')
 @section('content')
+<style>
+    .dataTables_wrapper {
+        overflow-x: hidden;
+    }
+</style>
 <div class="wrapper wrapper-content animated fadeInRight">
     <div class="row">
         <div class="col-lg-12">
@@ -76,11 +81,70 @@
         </div>
     </form>
 </div>
+<div class="modal fade" id="view_id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="exampleModalLabel">Visitor Information</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top: -25px; color: red; font-size: 25px">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-10">
+                        <label class="col-form-h4">Visitor Name:</label>
+                        <label class="col-form-h4" style="font-weight: 500"  id="visitorNameLabel"></label>
+                    </div>
+                    <div class="col-md-6 mb-10">
+                        <label class="col-form-h4">Tenant Name:</label>
+                        <label class="col-form-h4" style="font-weight: 500"  id="tenantNameLabel"></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-10">
+                        <label class="col-form-h4">Building Name:</label>
+                        <label class="col-form-h4" style="font-weight: 500" id="buildingNameLabel">
+                        </label>
+                    </div>
+                    <div class="col-md-6 mb-10">
+                        <label class="col-form-h4">Date Entered:</label>
+                        <label class="col-form-h4" style="font-weight: 500" id="dateEnteredLabel"></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="visitorScanId" class="col-lg-6" align="center">
+                        
+                    </div>
+                    <div id="visitorImg" class="col-lg-6" align="center">
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .mt-20 {
+        margin-top: 20px;
+    }
+    .resize {
+        height: 350px;
+        width: 400px;
+    }
+    .col-form-h4 {
+        font-size: 16px;
+    }
+</style>
 @endsection
 @section('footer')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function () {
+         let imageUrlTemplate = "{{ url('/visitors/:type/:id') }}";
         let orderTable = $('#dataTables-visitor').DataTable({
             processing: true,
             serverSide: true,
@@ -116,6 +180,7 @@
             },
             columns: [
                 { 
+                    className:'clickable',
                     data: 'visitor_id',
                     createdCell: function (td, cellData) {
                         if (!cellData) {
@@ -126,25 +191,25 @@
                 },
                 {
                     width: '8%',
-                    className: 'text-center',
+                    className: 'text-center clickable',
                     render: function (data, type, row) {
                         return `<i class="fa fa-image"></i>`
                     }
                 },
-                { data: 'name'},
-                { data: 'created_at'},
-                { data: 'tenant_name'},
-                { data: 'purpose'},
+                { className:'clickable',data: 'name'},
+                { className:'clickable', data: 'formatted_created_at'},
+                { className:'clickable', data: 'tenant_name'},
+                { className:'clickable', data: 'purpose'},
                 {
                     width: '8%',
                     className: 'text-center',
                     render: function (data, type, row) {
                         let button = '';
-                        // if (row.visitor_id == null) {
-                            button = `<button type="button" class="btn btn-success btn-outline btnEdit" title="Issue Visitor ID"><i class="fa fa fa-plus"></i><a href="#"></a></button>`
-                        // }else{
-                        //     button = `<a href="#" class="btn btn-danger btn-outline" title="Return ID"><i class="fa fa-repeat"></i></a>`
-                        // }
+                        if (row.visitor_id == null) {
+                            button = `<button type="button" class="btn btn-success btn-outline btnEdit" title="Issue Visitor ID"><i class="fa fa fa-plus"></i><a href="#"></a></button>`;
+                        }else{
+                            button = `<a href="#" class="btn btn-danger btn-outline btnReturn" title="Return ID"><i class="fa fa-repeat"></i></a>`;
+                        }
                         return button;
                     }
                 }
@@ -153,6 +218,63 @@
                 $(row).find('.btnEdit').unbind('click').on('click',function(){
                     $('#editId').val(data.id);
                     $('#editVisitor').modal('show');
+                });
+                $(row).find('.clickable').unbind('click').on('click',function(){
+
+                    $.ajax({
+                        url: "{{ route('visitors.list') }}",
+                        type: 'GET',
+                        data: {
+                            page: 1,
+                            limit: 1,
+                            id: data.id
+                        },
+                        dataType: "JSON",
+                        success: function (response) {
+                            let imgUrl = response.data[0].image;
+                            let scanIdImg = response.data[0].scan_id;
+                            $('#visitorScanId').html(
+                                `<img class="resize" src="${scanIdImg}"><h3 class="mt-20">Scanned ID</h3>`
+                            );
+                            $('#visitorImg').html(
+                                `<img class="resize" src="${imgUrl}"><h3 class="mt-20">Image</h3>`
+                            );
+                            $('#visitorNameLabel').html('&nbsp;' + data.name);
+                            $('#tenantNameLabel').html('&nbsp;' + data.tenant_name);
+                            $('#buildingNameLabel').html('&nbsp;' + data.building_location);
+                            $('#dateEnteredLabel').html('&nbsp;' + data.formatted_created_at);
+                            $('#view_id').modal('show');
+                        }
+                    });
+                });
+                $(row).find('.btnReturn').unbind('click').on('click',function(){
+                    let button = $(this);
+                    $.ajax({
+                        type: "POST",
+                        url: "{{ route('visitor.return.id') }}",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            _token: "{{ csrf_token() }}",
+                            id: data.id
+                        }),
+                        beforeSend: function(){
+                            button.prop('disabled',true).html('<i class="fa fa-spinner fa-spin"></i>');
+                        },
+                        success: function (response) {
+                            ReloadDataTable();
+                            Swal.fire({
+                                title: 'Success',
+                                text: response.message,
+                                icon: 'success'
+                            });
+                        },
+                        error: function (xhr) {
+                            Swal.fire('Error',xhr.responseJSON?.message || 'Error','error');
+                        },
+                        complete: function(){
+                            
+                        }
+                    });
                 });
             }
         });
@@ -175,7 +297,7 @@
                     $('.btnSave').prop('disabled',true).html('<i class="fa fa-spinner fa-spin"></i> Processing...');
                 },
                 success: function (response) {
-                    ReloadDataTable();
+                    ReloadDataTable(false);
                     Swal.fire({
                         title: 'Success',
                         text: response.message,
@@ -199,8 +321,8 @@
             $('#editId').val();
             $('#editVisitorForm').trigger('reset');
         });
-        function ReloadDataTable() {
-            orderTable.ajax.reload(null, false);
+        function ReloadDataTable(resetPagination = true) {
+            orderTable.ajax.reload(null, resetPagination);
         }
     });
 </script>

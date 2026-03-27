@@ -60,6 +60,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/visitors/{type}/{id}', 'VisitorController@ShowImage');
     Route::get('/visitors/list', 'VisitorController@VisitorList')->name('visitors.list');
     Route::post('create/id', 'VisitorController@CreateId')->name('visitor.create.id');
+    Route::post('return/id', 'VisitorController@ReturnId')->name('visitor.return.id');
     // reports
     Route::get('/report', 'ReportController@index');
     Route::get('/filter', 'ReportController@filter')->name('visitors.filter');

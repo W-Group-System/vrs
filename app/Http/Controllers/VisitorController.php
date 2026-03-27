@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Exports\VisitorExport;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -106,7 +107,8 @@ class VisitorController extends Controller
                 "return_id",
                 "purpose",
                 "building_location",
-                "created_at"
+                // "created_at"
+                DB::raw("DATE_FORMAT(created_at, '%m/%d/%Y %h:%i:%s %p') AS 'formatted_created_at'")
             )
             ->whereNull('return_id');
 
@@ -174,6 +176,29 @@ class VisitorController extends Controller
         }
         Alert::success('Success Title', 'Success Message');
         return back();
+    }
+
+    public function ReturnId(Request $request) { 
+        $response = ["message"=>"Failed to process returning of ID."];
+        $isSuccess = false;
+        try {
+            $id = $request->id??"";
+            $data = Visitor::find($id);
+            if ($data) {
+                $data->return_id = 1; 
+                $data->save();
+                $isSuccess = true;
+                $response = ["message"=>"ID Returned succesfully."];
+            }
+        } catch (\Throwable $th) {
+            Log::error("ERROR IN RETURN PROCESS ID: {$th->getMessage()}");
+        }
+        
+        if ($isSuccess) {
+            return response()->json($response,200);
+        }else{
+            return response()->json($response,400);
+        }
     }
 
     public function exportCsv(Request $request)
