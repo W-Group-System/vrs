@@ -108,9 +108,10 @@ class VisitorController extends Controller
                 "building_location",
                 "created_at"
                 ,
-                "image",
-                "scan_id",
-            );
+                "image"
+                // ,"scan_id",
+            )
+            ->whereNull('return_id');
 
             if (isset($request->id) && !empty($request->id)) {
                 $visitorList = $visitorList->where("id",$request->id);
