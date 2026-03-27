@@ -241,7 +241,7 @@
                             );
                             $('#visitorNameLabel').html('&nbsp;' + data.name);
                             $('#tenantNameLabel').html('&nbsp;' + data.tenant_name);
-                            $('#buildingNameLabel').html('&nbsp;' + data.building_location);
+                            $('#buildingNameLabel').html('&nbsp;' + data.building.name);
                             $('#dateEnteredLabel').html('&nbsp;' + data.formatted_created_at);
                             $('#view_id').modal('show');
                         }

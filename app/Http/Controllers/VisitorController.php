@@ -99,7 +99,7 @@ class VisitorController extends Controller
             $page = $request->page ?? 1;
             $limit = $request->limit ?? 10;
 
-            $visitorList = Visitor::select(
+            $visitorList = Visitor::with(['building'])->select(
                 "id",
                 "name",
                 "tenant_name",
