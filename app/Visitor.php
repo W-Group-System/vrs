@@ -8,6 +8,7 @@ class Visitor extends Model
 {
     //
     protected $table = "visitors";
+    protected $fillable = ["visitor_id"];
 
     public function location()
     {
