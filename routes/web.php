@@ -58,7 +58,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/visitors/export/pdf', 'VisitorController@exportPdf');
     Route::get('/visitors/export/excel', 'VisitorController@exportExcel');
     Route::get('/visitors/{type}/{id}', 'VisitorController@ShowImage');
-    Route::get('/visitors/list', 'VisitorController@VisitorList');
+    Route::get('/visitors/list', 'VisitorController@VisitorList')->name('visitors.list');
 
     // reports
     Route::get('/report', 'ReportController@index');
