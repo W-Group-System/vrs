@@ -49,8 +49,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('tenant/delete/{id}', 'TenantController@delete')->name('tenant.delete');
 
     // visitor id
-    Route::get('/visitor_id', 'VisitorController@visitor_id');
-    Route::get('/visitor_id_v2', 'VisitorController@VisitorIdV2');
+    // Route::get('/visitor_id', 'VisitorController@visitor_id');
+    Route::get('/visitor_id', 'VisitorController@VisitorIdV2');
+    // Route::get('/visitor_id_v2', 'VisitorController@VisitorIdV2');
     Route::post('new_id/{id}', 'VisitorController@new_id');
     Route::get('return_id/{id}', 'VisitorController@return_id');
     Route::get('view_id/{id}', 'VisitorController@view_id');
