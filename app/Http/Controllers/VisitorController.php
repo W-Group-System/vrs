@@ -112,6 +112,10 @@ class VisitorController extends Controller
             )
             ->whereNull('return_id');
 
+            if (auth()->user()->name !== 'Admin') {
+                $visitorList = $visitorList->where("building_location",auth()->user()->location);
+            }
+
             if (isset($request->id) && !empty($request->id)) {
                 $visitorList->addSelect("image","scan_id");
                 $visitorList = $visitorList->where("id",$request->id);
