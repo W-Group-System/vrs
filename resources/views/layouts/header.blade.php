@@ -76,6 +76,9 @@
                         <a href="{{ url('/visitor_id') }}"><i class="fa fa-id-badge"></i><span class="nav-label">Visitor ID Cards</span></a>
                     </li>
                     <li>
+                        <a href="{{ url('/visitor_id_returned') }}"><i class="fa fa-id-badge"></i><span class="nav-label">Returned Visitor ID Cards</span></a>
+                    </li>
+                    <li>
                         <a href="{{ url('/report') }}"><i class="fa fa-building"></i><span class="nav-label">Reports</span></a>
                     </li>
                     @if (@auth()->user()->role == 'Admin')
