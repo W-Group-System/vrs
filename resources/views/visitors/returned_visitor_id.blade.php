@@ -22,6 +22,14 @@
                                             <input type="text" id="search" name="search" placeholder="Search..." style="padding:5px; border:1px solid #ccc; border-radius:4px;">
                                         </div>
                                         <div>
+                                            <select class="form-control" name="tenantSearch" id="tenantSearch">
+                                                <option value=""></option>
+                                                @foreach ($tenants as $key => $value)
+                                                    <option value="{{ $key }}">{{ $value }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
                                             <input type="date" name="start_date" class="form-control">
                                         </div>
                                         <div>
@@ -33,15 +41,15 @@
                                             </button>
                                         </div>
                                     </form>
-                                <div>
-                                    <button id="btnCsv" class="btn btn-default btn-sm">
-                                        CSV
-                                    </button>
-                                    <button id="btnExcel" class="btn btn-default btn-sm">
-                                        Excel
-                                    </button>
+                                    <div>
+                                        <button id="btnCsv" class="btn btn-default btn-sm">
+                                            CSV
+                                        </button>
+                                        <button id="btnExcel" class="btn btn-default btn-sm">
+                                            Excel
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
                                 <table class="table table-striped table-bordered table-hover table-responsive dataTables-visitor" id="dataTables-visitor">
                                     <thead>
                                         <tr>
@@ -182,6 +190,7 @@
                         search: $('#search').val(),
                         start_date: $('input[name="start_date"]').val(),
                         end_date: $('input[name="end_date"]').val(),
+                        tenant : $('#tenantSearch').val()
                     },
                     success: function (resp) {
                         callback({
@@ -316,6 +325,7 @@
 
             let startDate = $('input[name="start_date"]').val();
             let endDate = $('input[name="end_date"]').val();
+            let tenant = $('#tenantSearch').val();
 
             let url = "{{ url('/visitors/export/csv/returned') }}";
 
@@ -329,6 +339,10 @@
                 params.append('end_date', endDate);
             }
 
+            if (tenant) {
+                params.append('tenant', tenant);
+            }
+
             window.location.href = url + '?' + params.toString();
         });
 
@@ -337,6 +351,7 @@
 
             let startDate = $('input[name="start_date"]').val();
             let endDate = $('input[name="end_date"]').val();
+            let tenant = $('#tenantSearch').val();
 
             let url = "{{ url('/visitors/export/excel/returned') }}";
 
@@ -350,7 +365,18 @@
                 params.append('end_date', endDate);
             }
 
+            if (tenant) {
+                params.append('tenant', tenant);
+            }
+
             window.location.href = url + '?' + params.toString();
+        });
+
+        $('#tenantSearch').select2({
+            theme: 'bootstrap',
+            width: '500px',
+            placeholder: 'Search Tenant',
+            allowClear: true
         });
 
         function ReloadDataTable(resetPagination = true) {

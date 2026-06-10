@@ -12,13 +12,15 @@ class VisitorExport implements FromCollection, WithHeadings
     protected $end_date;
     protected $type;
     protected $status;
+    protected $tenant;
 
-    public function __construct($start_date, $end_date, $type, $status)
+    public function __construct($start_date, $end_date, $type, $status, $tenant)
     {
         $this->start_date = $start_date;
         $this->end_date = $end_date;
         $this->type = $type;
         $this->status = $status;
+        $this->tenant = $tenant;
     }
     public function collection()
     {
@@ -34,6 +36,9 @@ class VisitorExport implements FromCollection, WithHeadings
 
         if (!empty($this->start_date) && !empty($this->end_date)) {
             $visitor = $visitor->whereBetween("created_at",[$this->start_date,$this->end_date]);
+        }
+        if (!empty($this->tenant)) {
+            $visitor = $visitor->where("tenant_name",$this->tenant);
         }
         
         $visitor = $visitor->get()

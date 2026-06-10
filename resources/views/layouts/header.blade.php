@@ -27,6 +27,9 @@
     <link href="{{ asset('css/animate.css') }}" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css">
+
     <style>
         .loader {
             position: fixed;
@@ -185,6 +188,10 @@
 
     <!-- DataTables -->
     <script src="{{ asset('js/plugins/dataTables/datatables.min.js') }}"></script>
+
+    {{-- select2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     @include('sweetalert::alert')
     @yield('footer')
     

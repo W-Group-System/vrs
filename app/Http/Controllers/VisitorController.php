@@ -88,8 +88,15 @@ class VisitorController extends Controller
     
     public function ReturnedVisitorId(Request $request) 
     {
+        $data = [];
+        $tenants = Tenant::query();
+        if (auth()->user()->name !== 'Admin') {
+            $tenants = $tenants->where("building_id",auth()->user()->location);
+        }
+        $tenants = $tenants->pluck("name","name");
+        $data['tenants'] = $tenants;
         
-        return view('visitors.returned_visitor_id');
+        return view('visitors.returned_visitor_id',$data);
     }
 
     public function VisitorList(Request $request){
@@ -135,6 +142,11 @@ class VisitorController extends Controller
                         ->orWhere('purpose', 'LIKE', "%{$search}%")
                         ->orWhere('visitor_id', 'LIKE', "%{$search}%");
                 });
+            }
+
+            if (isset($request->tenant) && !empty(isset($request->tenant))) {
+                $tenant = $request->tenant;
+                $visitorList = $visitorList->where('tenant_name', $tenant);
             }
 
             if ($request->filled('start_date') && $request->filled('end_date')) {
@@ -212,6 +224,11 @@ class VisitorController extends Controller
                         ->orWhere('purpose', 'LIKE', "%{$search}%")
                         ->orWhere('visitor_id', 'LIKE', "%{$search}%");
                 });
+            }
+
+            if (isset($request->tenant) && !empty(isset($request->tenant))) {
+                $tenant = $request->tenant;
+                $visitorList = $visitorList->where('tenant_name', $tenant);
             }
 
             if ($request->filled('start_date') && $request->filled('end_date')) {
@@ -302,6 +319,7 @@ class VisitorController extends Controller
 
         $start_date = !empty($request->start_date)?Carbon::parse($request->start_date)->startOfDay():"";
         $end_date = !empty($request->end_date)?Carbon::parse($request->end_date)->endOfDay():"";
+        $tenant = $request->tenant??"";
 
         if ($status == "returned") {
 
@@ -314,7 +332,7 @@ class VisitorController extends Controller
                 'Date Exit'
             ];
 
-            $callback = function () use ($columns, $start_date, $end_date) {
+            $callback = function () use ($columns, $start_date, $end_date,$tenant) {
 
                 $file = fopen('php://output', 'w');
 
@@ -325,6 +343,9 @@ class VisitorController extends Controller
 
                     if (!empty($start_date) && !empty($end_date)) {
                         $visitorList = $visitorList->whereBetween("created_at",[$start_date,$end_date]);
+                    }
+                    if (!empty($tenant)) {
+                        $visitorList = $visitorList->where("tenant_name",$tenant);
                     }
 
                     $visitorList = $visitorList->orderBy('updated_at', 'desc')
@@ -428,7 +449,9 @@ class VisitorController extends Controller
     {
         $start_date = !empty($request->start_date)?Carbon::parse($request->start_date)->startOfDay():"";
         $end_date = !empty($request->end_date)?Carbon::parse($request->end_date)->endOfDay():"";
-        return Excel::download(new VisitorExport($start_date,$end_date,"visitorId",$status), 'visitor_list.xlsx');
+        $tenant = $request->tenant??"";
+        
+        return Excel::download(new VisitorExport($start_date,$end_date,"visitorId",$status,$tenant), 'visitor_list.xlsx');
     }
 
     public function ShowImage($type,$id)
