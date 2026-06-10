@@ -180,6 +180,6 @@ class ReportController extends Controller
     {
         $start_date = isset($request->start_date) && !empty($request->start_date) ? Carbon::parse($request->start_date)->startOfDay():"";
         $end_date = isset($request->end_date) && !empty($request->end_date) ? Carbon::parse($request->end_date)->endOfDay():"";
-        return Excel::download(new VisitorExport($start_date,$end_date,""), 'visitor_list.xlsx');
+        return Excel::download(new VisitorExport($start_date,$end_date,"","",""), 'visitor_list.xlsx');
     }
 }
