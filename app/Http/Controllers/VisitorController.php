@@ -85,6 +85,19 @@ class VisitorController extends Controller
         
         return view('visitors.visitorIdV2');
     }
+    
+    public function ReturnedVisitorId(Request $request) 
+    {
+        $data = [];
+        $tenants = Tenant::query();
+        if (auth()->user()->name !== 'Admin') {
+            $tenants = $tenants->where("building_id",auth()->user()->location);
+        }
+        $tenants = $tenants->pluck("name","name");
+        $data['tenants'] = $tenants;
+        
+        return view('visitors.returned_visitor_id',$data);
+    }
 
     public function VisitorList(Request $request){
         $response = [
@@ -129,6 +142,93 @@ class VisitorController extends Controller
                         ->orWhere('purpose', 'LIKE', "%{$search}%")
                         ->orWhere('visitor_id', 'LIKE', "%{$search}%");
                 });
+            }
+
+            if (isset($request->tenant) && !empty(isset($request->tenant))) {
+                $tenant = $request->tenant;
+                $visitorList = $visitorList->where('tenant_name', $tenant);
+            }
+
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $start = Carbon::parse($request->start_date)->startOfDay();
+                $end   = Carbon::parse($request->end_date)->endOfDay();
+
+                $visitorList->whereBetween('created_at', [$start, $end]);
+            }
+
+            $totalCount = (clone $visitorList)->count();
+
+            $visitorList = $visitorList->orderBy("id","desc") 
+                ->skip(($page - 1) * $limit)
+                ->take($limit)
+                ->get();
+            $isSuccess = true;
+            $response["isSuccess"] = $isSuccess;
+            $response["message"] = "Successfully retrieved information.";
+            $response["total"] = $totalCount;
+            $response["data"] = $visitorList;
+        } catch (\Throwable $th) {
+            Log::error("ERROR IN GETTING VISITORS LIST: ".$th);
+        }
+
+        if ($isSuccess) {
+            return response()->json($response,200);
+        }else{
+            return response()->json($response,400);
+        }
+        
+        return $response;
+    }
+
+    public function ReturnedVisitorList(Request $request){
+        $response = [
+            "isSuccess"=>false,
+            "message"=>"Failed to retrieve information.",
+            "total"=>0,
+            "page"=>1,
+            "data"=>null
+        ];
+        $isSuccess = false;
+        try {
+            $page = $request->page ?? 1;
+            $limit = $request->limit ?? 10;
+
+            $visitorList = Visitor::with(['building'])->select(
+                "id",
+                "name",
+                "tenant_name",
+                "visitor_id",
+                "return_id",
+                "purpose",
+                "building_location",
+                // "created_at"
+                DB::raw("DATE_FORMAT(created_at, '%m/%d/%Y %h:%i:%s %p') AS 'formatted_created_at'"),
+                DB::raw("DATE_FORMAT(updated_at, '%m/%d/%Y %h:%i:%s %p') AS 'formatted_updated_at'")
+            )
+            ->where('return_id',1);
+
+            if (auth()->user()->name !== 'Admin') {
+                $visitorList = $visitorList->where("building_location",auth()->user()->location);
+            }
+
+            if (isset($request->id) && !empty($request->id)) {
+                $visitorList->addSelect("image","scan_id");
+                $visitorList = $visitorList->where("id",$request->id);
+            }
+
+            if (isset($request->search) && !empty(isset($request->search))) {
+                $search = $request->search;
+                $visitorList = $visitorList->where(function ($query) use ($search) {
+                    $query->where('name', 'LIKE', "%{$search}%")
+                        ->orWhere('tenant_name', 'LIKE', "%{$search}%")
+                        ->orWhere('purpose', 'LIKE', "%{$search}%")
+                        ->orWhere('visitor_id', 'LIKE', "%{$search}%");
+                });
+            }
+
+            if (isset($request->tenant) && !empty(isset($request->tenant))) {
+                $tenant = $request->tenant;
+                $visitorList = $visitorList->where('tenant_name', $tenant);
             }
 
             if ($request->filled('start_date') && $request->filled('end_date')) {
@@ -205,7 +305,7 @@ class VisitorController extends Controller
         }
     }
 
-    public function exportCsv(Request $request)
+    public function exportCsv(Request $request, $status = "active")
     {
         $filename = "visitors.csv";
 
@@ -217,26 +317,93 @@ class VisitorController extends Controller
             "Expires" => "0"
         ];
 
-        $query = Visitor::query()->whereNull('return_id');
-        $visitors = $query->orderBy('id', 'desc')->get();
+        $start_date = !empty($request->start_date)?Carbon::parse($request->start_date)->startOfDay():"";
+        $end_date = !empty($request->end_date)?Carbon::parse($request->end_date)->endOfDay():"";
+        $tenant = $request->tenant??"";
 
-        $columns = ['Visitor ID', 'Name', 'Tenant Name', 'Purpose', 'Date Entered'];
+        if ($status == "returned") {
 
-        $callback = function() use ($visitors, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-            foreach ($visitors as $visitor) {
-                fputcsv($file, [
-                    $visitor->visitor_id,
-                    $visitor->name,
-                    $visitor->tenant_name,
-                    $visitor->purpose,
-                    optional($visitor->created_at)->format('m/d/Y h:i:s A')
-                ]);
-            }
+            $columns = [
+                'Name',
+                'Building Name',
+                'Tenant Name',
+                'Purpose',
+                'Date Entered',
+                'Date Exit'
+            ];
 
-            fclose($file);
-        };
+            $callback = function () use ($columns, $start_date, $end_date,$tenant) {
+
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, $columns);
+
+                $visitorList = Visitor::with('building')
+                    ->where('return_id', 1);
+
+                    if (!empty($start_date) && !empty($end_date)) {
+                        $visitorList = $visitorList->whereBetween("created_at",[$start_date,$end_date]);
+                    }
+                    if (!empty($tenant)) {
+                        $visitorList = $visitorList->where("tenant_name",$tenant);
+                    }
+
+                    $visitorList = $visitorList->orderBy('updated_at', 'desc')
+                    ->chunk(1000, function ($visitors) use ($file) {
+
+                        foreach ($visitors as $visitor) {
+                            fputcsv($file, [
+                                $visitor->name,
+                                optional($visitor->building)->name,
+                                $visitor->tenant_name,
+                                $visitor->purpose,
+                                optional($visitor->created_at)->format('m/d/Y h:i:s A'),
+                                optional($visitor->updated_at)->format('m/d/Y h:i:s A')
+                            ]);
+                        }
+
+                        flush();
+                    });
+
+                fclose($file);
+            };
+
+        } else {
+
+            $columns = [
+                'Visitor ID',
+                'Name',
+                'Tenant Name',
+                'Purpose',
+                'Date Entered'
+            ];
+
+            $callback = function () use ($columns) {
+
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, $columns);
+
+                Visitor::whereNull('return_id')
+                    ->orderBy('id', 'desc')
+                    ->chunk(1000, function ($visitors) use ($file) {
+
+                        foreach ($visitors as $visitor) {
+                            fputcsv($file, [
+                                $visitor->visitor_id,
+                                $visitor->name,
+                                $visitor->tenant_name,
+                                $visitor->purpose,
+                                optional($visitor->created_at)->format('m/d/Y h:i:s A')
+                            ]);
+                        }
+
+                        flush();
+                    });
+
+                fclose($file);
+            };
+        }
 
         return response()->stream($callback, 200, $headers);
     }
@@ -278,11 +445,13 @@ class VisitorController extends Controller
         // return $pdf->stream('visitor_list.pdf'); // preview in browser
     }
 
-    public function exportExcel(Request $request)
+    public function exportExcel(Request $request, $status = "active")
     {
-        $start_date = Carbon::parse($request->start_date)->startOfDay();
-        $end_date = Carbon::parse($request->end_date)->endOfDay();
-        return Excel::download(new VisitorExport($start_date,$end_date,"visitorId"), 'visitor_list.xlsx');
+        $start_date = !empty($request->start_date)?Carbon::parse($request->start_date)->startOfDay():"";
+        $end_date = !empty($request->end_date)?Carbon::parse($request->end_date)->endOfDay():"";
+        $tenant = $request->tenant??"";
+        
+        return Excel::download(new VisitorExport($start_date,$end_date,"visitorId",$status,$tenant), 'visitor_list.xlsx');
     }
 
     public function ShowImage($type,$id)

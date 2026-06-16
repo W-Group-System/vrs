@@ -51,15 +51,17 @@ Route::group(['middleware' => 'auth'], function () {
     // visitor id
     // Route::get('/visitor_id', 'VisitorController@visitor_id');
     Route::get('/visitor_id', 'VisitorController@VisitorIdV2');
+    Route::get('/visitor_id_returned', 'VisitorController@ReturnedVisitorId');
     // Route::get('/visitor_id_v2', 'VisitorController@VisitorIdV2');
     Route::post('new_id/{id}', 'VisitorController@new_id');
     Route::get('return_id/{id}', 'VisitorController@return_id');
     Route::get('view_id/{id}', 'VisitorController@view_id');
-    Route::get('/visitors/export/csv', 'VisitorController@exportCsv');
+    Route::get('/visitors/export/csv/{status}', 'VisitorController@exportCsv');
     Route::get('/visitors/export/pdf', 'VisitorController@exportPdf');
-    Route::get('/visitors/export/excel', 'VisitorController@exportExcel');
+    Route::get('/visitors/export/excel/{status}', 'VisitorController@exportExcel');
     Route::get('/visitors/{type}/{id}', 'VisitorController@ShowImage');
     Route::get('/visitors/list', 'VisitorController@VisitorList')->name('visitors.list');
+    Route::get('/returned/list', 'VisitorController@ReturnedVisitorList')->name('visitors.returned.list');
     Route::post('create/id', 'VisitorController@CreateId')->name('visitor.create.id');
     Route::post('return/id', 'VisitorController@ReturnId')->name('visitor.return.id');
     // reports
